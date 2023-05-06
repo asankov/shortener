@@ -108,6 +108,6 @@ var (
 
 func (s *Shortener) handleAdmin(w http.ResponseWriter, r *http.Request) {
 	if err := tmpl.Execute(w, nil); err != nil {
-		s.logger.Println("[ERROR] error while executing template: %v", err)
+		s.logger.WithError(err).Error("Error while executing template", err)
 	}
 }
