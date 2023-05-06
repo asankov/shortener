@@ -18,7 +18,8 @@ type Shortener struct {
 
 	logger *logrus.Logger
 
-	db Database
+	db          Database
+	idGenerator IDGenerator
 }
 
 type Database interface {
@@ -29,7 +30,11 @@ type Database interface {
 	Delete(id string) error
 }
 
-func New(config *config.Config, db Database) (*Shortener, error) {
+type IDGenerator interface {
+	GenerateID() (string, error)
+}
+
+func New(config *config.Config, db Database, idGenerator IDGenerator) (*Shortener, error) {
 	s := &Shortener{
 		useSSL:   config.UseSSL,
 		certFile: config.SSL.CertFile,
@@ -37,8 +42,9 @@ func New(config *config.Config, db Database) (*Shortener, error) {
 		server: http.Server{
 			Addr: fmt.Sprintf(":%d", config.Port),
 		},
-		logger: logrus.New(),
-		db:     db,
+		logger:      logrus.New(),
+		db:          db,
+		idGenerator: idGenerator,
 	}
 
 	s.server.Handler = s.routes()
@@ -56,6 +62,7 @@ func (s *Shortener) Start() error {
 		s.logger.Infof("Starting server on address [%s] with SSL\n", s.server.Addr)
 		return s.server.ListenAndServeTLS(s.certFile, s.keyFile)
 	}
+
 	s.logger.Infof("Starting server on address [%s] with no SSL\n", s.server.Addr)
 	return s.server.ListenAndServe()
 }

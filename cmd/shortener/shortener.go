@@ -1,16 +1,15 @@
 package main
 
 import (
-	"log"
-
 	"github.com/asankov/shortener/internal/dynamo"
 	"github.com/asankov/shortener/pkg/config"
 	"github.com/asankov/shortener/pkg/shortener"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
 	if err := run(); err != nil {
-		log.Panic(err)
+		logrus.Panic(err)
 	}
 }
 
@@ -24,7 +23,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	shortener, err := shortener.New(config, db)
+	shortener, err := shortener.New(config, db, db)
 	if err != nil {
 		return err
 	}
