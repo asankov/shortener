@@ -43,7 +43,7 @@ func (s *Shortener) handleGetLink(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 		}
 
-		s.logger.Warnf("unknown error while getting link by id [%s]: %v", id, err)
+		s.logger.Warn("unknown error while getting link by id", "link_id", id, "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -61,7 +61,7 @@ type createLinkRequest struct {
 func (s *Shortener) handleCreateLink(w http.ResponseWriter, r *http.Request) {
 	var link createLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&link); err != nil {
-		s.logger.WithError(err).Error("Error while decoding request body")
+		s.logger.Error("Error while decoding request body", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -69,7 +69,7 @@ func (s *Shortener) handleCreateLink(w http.ResponseWriter, r *http.Request) {
 	if link.ID == "" {
 		id, err := s.idGenerator.GenerateID()
 		if err != nil {
-			s.logger.WithError(err).Error("Error while generating ID")
+			s.logger.Error("Error while generating ID", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -77,7 +77,7 @@ func (s *Shortener) handleCreateLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := s.db.Create(link.ID, link.URL); err != nil {
-		s.logger.WithError(err).Error("Error while creating link")
+		s.logger.Error("Error while creating link", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -94,7 +94,7 @@ func (s *Shortener) handleDeleteLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := s.db.Delete(id); err != nil {
-		s.logger.WithError(err).Error("Error while deleting link")
+		s.logger.Error("Error while deleting link", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -108,6 +108,6 @@ var (
 
 func (s *Shortener) handleAdmin(w http.ResponseWriter, r *http.Request) {
 	if err := tmpl.Execute(w, nil); err != nil {
-		s.logger.WithError(err).Error("Error while executing template", err)
+		s.logger.Error("Error while executing template", "error", err)
 	}
 }

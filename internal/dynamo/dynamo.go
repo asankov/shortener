@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slog"
 )
 
 var (
@@ -27,7 +27,7 @@ var (
 type Database struct {
 	client *dynamodb.Client
 
-	logger *logrus.Logger
+	logger *slog.Logger
 	rand   *rand.Rand
 }
 
@@ -56,7 +56,7 @@ func New() (*Database, error) {
 	}, nil
 }
 
-func (d *Database) SetLogger(l *logrus.Logger) {
+func (d *Database) SetLogger(l *slog.Logger) {
 	d.logger = l
 }
 
@@ -89,7 +89,7 @@ func (d *Database) GetAll() ([]*links.Link, error) {
 	}
 	if len(scanOutput.LastEvaluatedKey) > 0 {
 		// TODO: implement pagination
-		d.logger.Warnln("there are more results")
+		d.logger.Warn("there are more results")
 	}
 	result := make([]*links.Link, 0, len(scanOutput.Items))
 	for _, item := range scanOutput.Items {

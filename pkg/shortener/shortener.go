@@ -3,10 +3,11 @@ package shortener
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/asankov/shortener/pkg/config"
 	"github.com/asankov/shortener/pkg/links"
-	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slog"
 )
 
 type Shortener struct {
@@ -16,7 +17,7 @@ type Shortener struct {
 	certFile string
 	keyFile  string
 
-	logger *logrus.Logger
+	logger *slog.Logger
 
 	db          Database
 	idGenerator IDGenerator
@@ -42,7 +43,7 @@ func New(config *config.Config, db Database, idGenerator IDGenerator) (*Shortene
 		server: http.Server{
 			Addr: fmt.Sprintf(":%d", config.Port),
 		},
-		logger:      logrus.New(),
+		logger:      slog.New(slog.NewTextHandler(os.Stdout, nil)),
 		db:          db,
 		idGenerator: idGenerator,
 	}
@@ -52,17 +53,17 @@ func New(config *config.Config, db Database, idGenerator IDGenerator) (*Shortene
 	return s, nil
 }
 
-func (s *Shortener) SetLogger(l *logrus.Logger) *Shortener {
+func (s *Shortener) SetLogger(l *slog.Logger) *Shortener {
 	s.logger = l
 	return s
 }
 
 func (s *Shortener) Start() error {
 	if s.useSSL {
-		s.logger.Infof("Starting server on address [%s] with SSL\n", s.server.Addr)
+		s.logger.Info(fmt.Sprintf("Starting server on address [%s] with SSL\n", s.server.Addr))
 		return s.server.ListenAndServeTLS(s.certFile, s.keyFile)
 	}
 
-	s.logger.Infof("Starting server on address [%s] with no SSL\n", s.server.Addr)
+	s.logger.Info(fmt.Sprintf("Starting server on address [%s] with no SSL\n", s.server.Addr))
 	return s.server.ListenAndServe()
 }

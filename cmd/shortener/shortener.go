@@ -4,16 +4,17 @@ import (
 	"github.com/asankov/shortener/internal/dynamo"
 	"github.com/asankov/shortener/pkg/config"
 	"github.com/asankov/shortener/pkg/shortener"
-	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slog"
 )
 
 func main() {
 	if err := run(); err != nil {
-		logrus.Panic(err)
+		slog.Error("error while running shortener: %v", err)
 	}
 }
 
 func run() error {
+
 	config, err := config.NewFromEnv()
 	if err != nil {
 		return err
