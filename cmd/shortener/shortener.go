@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/asankov/shortener/internal/dynamo"
+	"github.com/asankov/shortener/internal/inmemory"
 	"github.com/asankov/shortener/pkg/config"
 	"github.com/asankov/shortener/pkg/shortener"
 	"golang.org/x/exp/slog"
@@ -20,14 +21,28 @@ func run() error {
 		return err
 	}
 
-	db, err := dynamo.New()
+	db, idGenerator, err := initFromConfig(config)
 	if err != nil {
 		return err
 	}
-	shortener, err := shortener.New(config, db, db)
+	shortener, err := shortener.New(config, db, idGenerator)
 	if err != nil {
 		return err
 	}
 
 	return shortener.Start()
+}
+
+func initFromConfig(config *config.Config) (shortener.Database, shortener.IDGenerator, error) {
+	if config.UseInMemoryDB {
+		db := inmemory.NewDB()
+
+		return db, db, nil
+	}
+	db, err := dynamo.New()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return db, db, nil
 }

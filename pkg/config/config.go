@@ -12,6 +12,8 @@ type Config struct {
 	UseSSL bool `default:"false" split_words:"true"`
 	Port   int  `default:"8080"`
 	SSL    SSL
+
+	UseInMemoryDB bool `envconfig:"SHORTENER_USE_IN_MEMORY_DB"`
 }
 
 type SSL struct {

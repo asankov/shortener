@@ -3,9 +3,8 @@ package dynamo
 import (
 	"context"
 	"errors"
-	"math/rand"
-	"time"
 
+	"github.com/asankov/shortener/internal/random"
 	"github.com/asankov/shortener/pkg/links"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -28,7 +27,6 @@ type Database struct {
 	client *dynamodb.Client
 
 	logger *slog.Logger
-	rand   *rand.Rand
 }
 
 func buildDynamoDBClient() (*dynamodb.Client, error) {
@@ -52,7 +50,6 @@ func New() (*Database, error) {
 	}
 	return &Database{
 		client: client,
-		rand:   rand.New(rand.NewSource(time.Now().Unix())),
 	}, nil
 }
 
@@ -158,7 +155,7 @@ func (d *Database) GenerateID() (string, error) {
 			return "", links.ErrIDNotGenerated
 		}
 
-		id := d.randomID(idLength)
+		id := random.ID(idLength)
 		// This is not optimal as DynamoDB reads are not free.
 		// Probably best to substitute it with some sort of cache at some point.
 		_, err := d.GetByID(id)
@@ -169,14 +166,4 @@ func (d *Database) GenerateID() (string, error) {
 		}
 		conflictCount++
 	}
-}
-
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-func (d *Database) randomID(n int) string {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[d.rand.Intn(len(letterBytes))]
-	}
-	return string(b)
 }
