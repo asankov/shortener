@@ -4,15 +4,25 @@ import (
 	"errors"
 
 	"github.com/asankov/shortener/internal/random"
+	"github.com/asankov/shortener/internal/users"
 	"github.com/asankov/shortener/pkg/links"
 )
 
 type DB struct {
 	links map[string]*links.Link
+	users map[string]*users.User
 }
 
 func NewDB() *DB {
-	return &DB{links: make(map[string]*links.Link)}
+	return &DB{
+		links: make(map[string]*links.Link),
+		users: map[string]*users.User{
+			"admin@asankov.dev": &users.User{
+				Email: "admin@asankov.dev",
+				Roles: []users.Role{users.RoleAdmin},
+			},
+		},
+	}
 }
 
 func (d *DB) GetByID(id string) (*links.Link, error) {

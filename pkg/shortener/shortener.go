@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/asankov/shortener/internal/users"
 	"github.com/asankov/shortener/pkg/config"
 	"github.com/asankov/shortener/pkg/links"
 	"golang.org/x/exp/slog"
@@ -19,8 +20,10 @@ type Shortener struct {
 
 	logger *slog.Logger
 
-	db          Database
-	idGenerator IDGenerator
+	db            Database
+	idGenerator   IDGenerator
+	userService   UserService
+	authenticator Authenticator
 }
 
 type Database interface {
@@ -35,7 +38,15 @@ type IDGenerator interface {
 	GenerateID() (string, error)
 }
 
-func New(config *config.Config, db Database, idGenerator IDGenerator) (*Shortener, error) {
+type UserService interface {
+	Get(email, password string) (*users.User, error)
+}
+
+type Authenticator interface {
+	NewTokenForUser(user *users.User) (string, error)
+}
+
+func New(config *config.Config, db Database, idGenerator IDGenerator, userService UserService, authenticator Authenticator) (*Shortener, error) {
 	s := &Shortener{
 		useSSL:   config.UseSSL,
 		certFile: config.SSL.CertFile,
@@ -43,9 +54,11 @@ func New(config *config.Config, db Database, idGenerator IDGenerator) (*Shortene
 		server: http.Server{
 			Addr: fmt.Sprintf(":%d", config.Port),
 		},
-		logger:      slog.New(slog.NewTextHandler(os.Stdout, nil)),
-		db:          db,
-		idGenerator: idGenerator,
+		logger:        slog.New(slog.NewTextHandler(os.Stdout, nil)),
+		db:            db,
+		idGenerator:   idGenerator,
+		userService:   userService,
+		authenticator: authenticator,
 	}
 
 	s.server.Handler = s.routes()

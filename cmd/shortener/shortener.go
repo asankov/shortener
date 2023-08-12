@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/asankov/shortener/internal/auth"
 	"github.com/asankov/shortener/internal/dynamo"
 	"github.com/asankov/shortener/internal/inmemory"
 	"github.com/asankov/shortener/pkg/config"
@@ -21,11 +22,12 @@ func run() error {
 		return err
 	}
 
-	db, idGenerator, err := initFromConfig(config)
+	db, idGenerator, userService, authenticator, err := initFromConfig(config)
 	if err != nil {
 		return err
 	}
-	shortener, err := shortener.New(config, db, idGenerator)
+
+	shortener, err := shortener.New(config, db, idGenerator, userService, authenticator)
 	if err != nil {
 		return err
 	}
@@ -33,16 +35,19 @@ func run() error {
 	return shortener.Start()
 }
 
-func initFromConfig(config *config.Config) (shortener.Database, shortener.IDGenerator, error) {
+func initFromConfig(config *config.Config) (shortener.Database, shortener.IDGenerator, shortener.UserService, shortener.Authenticator, error) {
+	authenticator := auth.NewAutheniticator(config.Secret)
+
 	if config.UseInMemoryDB {
 		db := inmemory.NewDB()
 
-		return db, db, nil
+		return db, db, db, authenticator, nil
 	}
 	db, err := dynamo.New()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, authenticator, err
 	}
 
-	return db, db, nil
+	// TODO: return user service
+	return db, db, nil, authenticator, nil
 }
