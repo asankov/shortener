@@ -52,7 +52,7 @@
 
     <h2>Shorten a link</h2>
 
-    <div class="input-group mb-3">
+    <form class="input-group mb-3" id="shorten-link-form">
       <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"
         id="url-type-button">Random URL</button>
       <ul class="dropdown-menu">
@@ -60,10 +60,9 @@
         <li><a class="dropdown-item" href="#" id="custom-url-button">Custom URL</a></li>
       </ul>
       <input type="text" class="form-control" placeholder="Link to be shortened" aria-label="Link to be shortened"
-        aria-describedby="button-addon2">
-      <button class="btn btn-primary" type="button" id="button-addon2"><i
-          class="bi bi-arrow-up-right-circle-fill"></i></button>
-    </div>
+        aria-describedby="button-addon2" id="link">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-arrow-up-right-circle-fill"></i></button>
+    </form>
 
     <h2>Shortened URLs</h2>
 
@@ -77,23 +76,13 @@
         </tr>
       </thead>
       <tbody>
+        {{ range $index, $link := .Links }}
         <tr>
-          <th scope="row">1</th>
-          <td>Mark</td>
-          <td>Otto</td>
-          <td>@mdo</td>
+          <th scope="row">{{ $index }}</th>
+          <td>{{ $link.URL }}</td>
+          <td>{{ $link.ID }}</td>
         </tr>
-        <tr>
-          <th scope="row">2</th>
-          <td>Jacob</td>
-          <td>Thornton</td>
-          <td>@fat</td>
-        </tr>
-        <tr>
-          <th scope="row">3</th>
-          <td colspan="2">Larry the Bird</td>
-          <td>@twitter</td>
-        </tr>
+        {{ end }}
       </tbody>
     </table>
     <!-- Form to add or edit URLs -->

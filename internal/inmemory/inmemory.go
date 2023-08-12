@@ -16,7 +16,11 @@ func NewDB() *DB {
 }
 
 func (d *DB) GetByID(id string) (*links.Link, error) {
-	return d.links[id], nil
+	link, found := d.links[id]
+	if !found {
+		return nil, links.ErrLinkNotFound
+	}
+	return link, nil
 }
 
 func (d *DB) GetAll() ([]*links.Link, error) {

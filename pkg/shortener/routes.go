@@ -107,7 +107,19 @@ var (
 )
 
 func (s *Shortener) handleAdmin(w http.ResponseWriter, r *http.Request) {
-	if err := tmpl.Execute(w, nil); err != nil {
+	type pageData struct {
+		Links []*links.Link
+	}
+
+	links, err := s.db.GetAll()
+	if err != nil {
+		// TODO: log
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+	rr := pageData{
+		Links: links,
+	}
+	if err := tmpl.Execute(w, rr); err != nil {
 		s.logger.Error("Error while executing template", "error", err)
 	}
 }
