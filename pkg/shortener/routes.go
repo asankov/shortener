@@ -12,8 +12,12 @@ import (
 
 func (s *Shortener) routes() http.Handler {
 	router := mux.NewRouter()
+	// TODO: auth
 	router.HandleFunc("/admin", s.handleAdmin).Methods(http.MethodGet)
 	router.HandleFunc("/{id}", s.handleGetLink).Methods(http.MethodGet)
+
+	router.HandleFunc("/admin/login", s.handleAdminLoginPage).Methods(http.MethodGet)
+	router.HandleFunc("/admin/login", s.handleAdminLogin).Methods(http.MethodPost)
 
 	// TODO: auth
 	apiRoutes := router.PathPrefix("/api/v1").Subrouter()
@@ -103,7 +107,8 @@ func (s *Shortener) handleDeleteLink(w http.ResponseWriter, r *http.Request) {
 }
 
 var (
-	tmpl = template.Must(template.ParseFiles("./internal/ui/template/admin-page.html"))
+	tmpl               = template.Must(template.ParseFiles("./internal/ui/template/admin-page.html"))
+	adminLoginPageTmpl = template.Must(template.ParseFiles("./internal/ui/template/admin-login.html"))
 )
 
 func (s *Shortener) handleAdmin(w http.ResponseWriter, r *http.Request) {
@@ -113,7 +118,7 @@ func (s *Shortener) handleAdmin(w http.ResponseWriter, r *http.Request) {
 
 	links, err := s.db.GetAll()
 	if err != nil {
-		// TODO: log
+		s.logger.Error("error while getting all links", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	rr := pageData{
@@ -121,5 +126,45 @@ func (s *Shortener) handleAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := tmpl.Execute(w, rr); err != nil {
 		s.logger.Error("Error while executing template", "error", err)
+	}
+}
+
+func (s *Shortener) handleAdminLoginPage(w http.ResponseWriter, r *http.Request) {
+	if err := adminLoginPageTmpl.Execute(w, r); err != nil {
+		s.logger.Error("Error while executing template", "error", err)
+	}
+}
+
+func (s *Shortener) handleAdminLogin(w http.ResponseWriter, r *http.Request) {
+	type request struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	var req request
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		s.logger.Error("error while decoding request body", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	user, err := s.userService.Get(req.Email, req.Password)
+	if err != nil {
+		s.logger.Error("error while getting user", "error", err, "email", req.Email)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	token, err := s.authenticator.NewTokenForUser(user)
+	if err != nil {
+		s.logger.Error("error while generating token for user", "error", err, "email", req.Email)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	type response struct {
+		Token string `json:"token"`
+	}
+
+	if err := json.NewEncoder(w).Encode(response{Token: token}); err != nil {
+		s.logger.Error("error while encoding response", "error", err, "email", req.Email)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

@@ -13,6 +13,9 @@ type Config struct {
 	Port   int  `default:"8080"`
 	SSL    SSL
 
+	// Secret is the secret used to generate the JWT token.
+	Secret string `required:"true"`
+
 	UseInMemoryDB bool `envconfig:"SHORTENER_USE_IN_MEMORY_DB"`
 }
 
