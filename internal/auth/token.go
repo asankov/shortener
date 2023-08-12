@@ -33,8 +33,8 @@ type header struct {
 }
 
 type payload struct {
-	User      *users.User
-	ExpiresAt int64 `json:"exp"`
+	User      *users.User `json:"user"`
+	ExpiresAt int64       `json:"exp"`
 }
 
 // Authenticator handles the logic around generating
