@@ -14,22 +14,20 @@ import (
 func (s *Shortener) routes() http.Handler {
 	router := mux.NewRouter()
 	// // TODO: auth
-	// router.HandleFunc("/admin", s.handleAdmin).Methods(http.MethodGet)
-	// router.HandleFunc("/{id}", s.handleGetLink).Methods(http.MethodGet)
+	router.HandleFunc("/admin", s.handleAdmin).Methods(http.MethodGet)
 
-	// router.HandleFunc("/admin/login", s.handleAdminLoginPage).Methods(http.MethodGet)
-	// router.HandleFunc("/admin/login", s.handleAdminLogin).Methods(http.MethodPost)
+	router.HandleFunc("/admin/login", s.handleAdminLoginPage).Methods(http.MethodGet)
 
-	// // TODO: auth
-	// apiRoutes := router.PathPrefix("/api/v1").Subrouter()
-	// apiRoutes.HandleFunc("/links", s.handleCreateLink).Methods(http.MethodPost)
-	// apiRoutes.HandleFunc("/links/{id}", s.handleDeleteLink).Methods(http.MethodDelete)
+	// TODO: auth
+	apiRoutes := router.PathPrefix("/api/v1").Subrouter()
+	apiRoutes.HandleFunc("/links", s.handleCreateLink).Methods(http.MethodPost)
+	apiRoutes.HandleFunc("/links/{id}", s.handleDeleteLink).Methods(http.MethodDelete)
 
-	// // TODO
-	// // apiRoutes.HandleFunc("/{id}", s.handleGetLinkMetrics).Methods(http.MethodGet)
+	// TODO
+	// apiRoutes.HandleFunc("/{id}", s.handleGetLinkMetrics).Methods(http.MethodGet)
 
-	// fs := http.FileServer(http.Dir("./static"))
-	// router.PathPrefix("/static/").Handler(http.StripPrefix("/static", fs))
+	fs := http.FileServer(http.Dir("./static"))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static", fs))
 
 	return apis.HandlerFromMux(s, router)
 
@@ -51,6 +49,31 @@ func (s *Shortener) GetLinkById(w http.ResponseWriter, r *http.Request, linkId s
 	// TODO: increment the number of clicks
 
 	http.Redirect(w, r, link.URL, http.StatusFound)
+}
+
+func (s *Shortener) LoginAdmin(w http.ResponseWriter, r *http.Request) {
+	var req apis.AdminLoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		s.logger.Error("error while decoding request body", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	user, err := s.userService.Get(req.Username, req.Password)
+	if err != nil {
+		s.logger.Error("error while getting user", "error", err, "username", req.Username)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	token, err := s.authenticator.NewTokenForUser(user)
+	if err != nil {
+		s.logger.Error("error while generating token for user", "error", err, "username", req.Username)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	if err := json.NewEncoder(w).Encode(apis.AdminLoginResponse{Token: token}); err != nil {
+		s.logger.Error("error while encoding response", "error", err, "email", req.Username)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 type createLinkRequest struct {
@@ -128,39 +151,5 @@ func (s *Shortener) handleAdmin(w http.ResponseWriter, r *http.Request) {
 func (s *Shortener) handleAdminLoginPage(w http.ResponseWriter, r *http.Request) {
 	if err := adminLoginPageTmpl.Execute(w, r); err != nil {
 		s.logger.Error("Error while executing template", "error", err)
-	}
-}
-
-func (s *Shortener) handleAdminLogin(w http.ResponseWriter, r *http.Request) {
-	type request struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-
-	var req request
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		s.logger.Error("error while decoding request body", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	user, err := s.userService.Get(req.Email, req.Password)
-	if err != nil {
-		s.logger.Error("error while getting user", "error", err, "email", req.Email)
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	token, err := s.authenticator.NewTokenForUser(user)
-	if err != nil {
-		s.logger.Error("error while generating token for user", "error", err, "email", req.Email)
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	type response struct {
-		Token string `json:"token"`
-	}
-
-	if err := json.NewEncoder(w).Encode(response{Token: token}); err != nil {
-		s.logger.Error("error while encoding response", "error", err, "email", req.Email)
-		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

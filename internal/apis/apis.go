@@ -11,8 +11,25 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// AdminLoginRequest defines model for AdminLoginRequest.
+type AdminLoginRequest struct {
+	Password string `json:"password"`
+	Username string `json:"username"`
+}
+
+// AdminLoginResponse defines model for AdminLoginResponse.
+type AdminLoginResponse struct {
+	Token string `json:"token"`
+}
+
+// LoginAdminJSONRequestBody defines body for LoginAdmin for application/json ContentType.
+type LoginAdminJSONRequestBody = AdminLoginRequest
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+
+	// (POST /api/v1/admin/login)
+	LoginAdmin(w http.ResponseWriter, r *http.Request)
 	// Redirect to link
 	// (GET /{linkId})
 	GetLinkById(w http.ResponseWriter, r *http.Request, linkId string)
@@ -26,6 +43,21 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// LoginAdmin operation middleware
+func (siw *ServerInterfaceWrapper) LoginAdmin(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.LoginAdmin(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
 
 // GetLinkById operation middleware
 func (siw *ServerInterfaceWrapper) GetLinkById(w http.ResponseWriter, r *http.Request) {
@@ -165,6 +197,8 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 		HandlerMiddlewares: options.Middlewares,
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
+
+	r.HandleFunc(options.BaseURL+"/api/v1/admin/login", wrapper.LoginAdmin).Methods("POST")
 
 	r.HandleFunc(options.BaseURL+"/{linkId}", wrapper.GetLinkById).Methods("GET")
 
