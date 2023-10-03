@@ -11,7 +11,7 @@ import (
 
 func main() {
 	if err := run(); err != nil {
-		slog.Error("error while running shortener: %v", err)
+		slog.Error("error while running shortener", err)
 	}
 }
 
