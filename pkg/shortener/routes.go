@@ -20,7 +20,6 @@ func (s *Shortener) routes() http.Handler {
 
 	// TODO: auth
 	apiRoutes := router.PathPrefix("/api/v1").Subrouter()
-	apiRoutes.HandleFunc("/links", s.handleCreateLink).Methods(http.MethodPost)
 	apiRoutes.HandleFunc("/links/{id}", s.handleDeleteLink).Methods(http.MethodDelete)
 
 	// TODO
@@ -76,30 +75,25 @@ func (s *Shortener) LoginAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type createLinkRequest struct {
-	ID  string `json:"id,omitempty"`
-	URL string `json:"url,omitempty"`
-}
-
-func (s *Shortener) handleCreateLink(w http.ResponseWriter, r *http.Request) {
-	var link createLinkRequest
+func (s *Shortener) CreateNewLink(w http.ResponseWriter, r *http.Request) {
+	var link apis.CreateShortLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&link); err != nil {
 		s.logger.Error("Error while decoding request body", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if link.ID == "" {
+	if link.Id == nil {
 		id, err := s.idGenerator.GenerateID()
 		if err != nil {
 			s.logger.Error("Error while generating ID", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		link.ID = id
+		link.Id = &id
 	}
 
-	if err := s.db.Create(link.ID, link.URL); err != nil {
+	if err := s.db.Create(*link.Id, link.Url); err != nil {
 		s.logger.Error("Error while creating link", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
