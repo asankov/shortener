@@ -10,10 +10,10 @@ import (
 )
 
 func (s *Shortener) routes() http.Handler {
-	return apis.Handler(s)
+	return apis.Handler(s.handler)
 }
 
-func (s *Shortener) GetLinkById(w http.ResponseWriter, r *http.Request, linkId string) {
+func (s *handler) GetLinkById(w http.ResponseWriter, r *http.Request, linkId string) {
 	link, err := s.db.GetByID(linkId)
 	if err != nil {
 		if errors.Is(err, links.ErrLinkNotFound) {
@@ -30,7 +30,7 @@ func (s *Shortener) GetLinkById(w http.ResponseWriter, r *http.Request, linkId s
 	http.Redirect(w, r, link.URL, http.StatusFound)
 }
 
-func (s *Shortener) LoginAdmin(w http.ResponseWriter, r *http.Request) {
+func (s *handler) LoginAdmin(w http.ResponseWriter, r *http.Request) {
 	var req apis.AdminLoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		s.logger.Error("error while decoding request body", "error", err)
@@ -55,7 +55,7 @@ func (s *Shortener) LoginAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Shortener) CreateNewLink(w http.ResponseWriter, r *http.Request) {
+func (s *handler) CreateNewLink(w http.ResponseWriter, r *http.Request) {
 	var link apis.CreateShortLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&link); err != nil {
 		s.logger.Error("Error while decoding request body", "error", err)
@@ -82,11 +82,11 @@ func (s *Shortener) CreateNewLink(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (s *Shortener) GetLinkMetrics(w http.ResponseWriter, r *http.Request, linkId string) {
+func (s *handler) GetLinkMetrics(w http.ResponseWriter, r *http.Request, linkId string) {
 	panic("not implemented")
 }
 
-func (s *Shortener) DeleteShortLink(w http.ResponseWriter, r *http.Request, linkID string) {
+func (s *handler) DeleteShortLink(w http.ResponseWriter, r *http.Request, linkID string) {
 	if err := s.db.Delete(linkID); err != nil {
 		s.logger.Error("Error while deleting link", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)

@@ -20,10 +20,16 @@ type Shortener struct {
 
 	logger *slog.Logger
 
+	handler *handler
+}
+
+type handler struct {
 	db            Database
-	idGenerator   IDGenerator
 	userService   UserService
 	authenticator Authenticator
+	idGenerator   IDGenerator
+
+	logger *slog.Logger
 }
 
 type Database interface {
@@ -47,6 +53,7 @@ type Authenticator interface {
 }
 
 func New(config *config.Config, db Database, idGenerator IDGenerator, userService UserService, authenticator Authenticator) (*Shortener, error) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	s := &Shortener{
 		useSSL:   config.UseSSL,
 		certFile: config.SSL.CertFile,
@@ -54,11 +61,14 @@ func New(config *config.Config, db Database, idGenerator IDGenerator, userServic
 		server: http.Server{
 			Addr: fmt.Sprintf(":%d", config.Port),
 		},
-		logger:        slog.New(slog.NewTextHandler(os.Stdout, nil)),
-		db:            db,
-		idGenerator:   idGenerator,
-		userService:   userService,
-		authenticator: authenticator,
+		logger: logger,
+		handler: &handler{
+			db:            db,
+			userService:   userService,
+			authenticator: authenticator,
+			idGenerator:   idGenerator,
+			logger:        logger,
+		},
 	}
 
 	s.server.Handler = s.routes()
@@ -68,6 +78,7 @@ func New(config *config.Config, db Database, idGenerator IDGenerator, userServic
 
 func (s *Shortener) SetLogger(l *slog.Logger) *Shortener {
 	s.logger = l
+	s.handler.logger = l
 	return s
 }
 
