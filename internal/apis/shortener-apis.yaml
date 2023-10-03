@@ -27,5 +27,48 @@ paths:
           description: Not Found
       operationId: get-link-by-id
       description: This endpoint redirects to the route that is shortened with this ID
+  /api/v1/admin/login:
+    post:
+      summary: ''
+      operationId: login-admin
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminLoginResponse'
+        '401':
+          description: Unauthorized
+      description: Endpoint for admin login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminLoginRequest'
 components:
-  schemas: {}
+  schemas:
+    AdminLoginRequest:
+      title: AdminLoginRequest
+      x-stoplight:
+        id: g8rl079eb7og3
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+    AdminLoginResponse:
+      title: AdminLoginResponse
+      x-stoplight:
+        id: 9177pcmac8xb9
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
+  requestBodies: {}
