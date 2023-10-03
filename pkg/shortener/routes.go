@@ -18,13 +18,6 @@ func (s *Shortener) routes() http.Handler {
 
 	router.HandleFunc("/admin/login", s.handleAdminLoginPage).Methods(http.MethodGet)
 
-	// TODO: auth
-	apiRoutes := router.PathPrefix("/api/v1").Subrouter()
-	apiRoutes.HandleFunc("/links/{id}", s.handleDeleteLink).Methods(http.MethodDelete)
-
-	// TODO
-	// apiRoutes.HandleFunc("/{id}", s.handleGetLinkMetrics).Methods(http.MethodGet)
-
 	fs := http.FileServer(http.Dir("./static"))
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static", fs))
 
@@ -102,15 +95,12 @@ func (s *Shortener) CreateNewLink(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (s *Shortener) handleDeleteLink(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
-	if id == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+func (s *Shortener) GetLinkMetrics(w http.ResponseWriter, r *http.Request, linkId string) {
+	panic("not implemented")
+}
 
-	if err := s.db.Delete(id); err != nil {
+func (s *Shortener) DeleteShortLink(w http.ResponseWriter, r *http.Request, linkID string) {
+	if err := s.db.Delete(linkID); err != nil {
 		s.logger.Error("Error while deleting link", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return

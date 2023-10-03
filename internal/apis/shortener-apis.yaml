@@ -61,6 +61,29 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateShortLinkRequest'
+  '/api/v1/links/{linkId}':
+    parameters:
+      - schema:
+          type: string
+        name: linkId
+        in: path
+        required: true
+    get:
+      summary: Get Link Metrics
+      tags: []
+      responses: {}
+      operationId: get-link-metrics
+      description: Endpoint for getting the metrics of a shortened link
+      security:
+        - JWT: []
+    delete:
+      summary: Delete link
+      operationId: delete-short-link
+      responses:
+        '204':
+          description: No Content
+      security:
+        - JWT: []
 components:
   schemas:
     AdminLoginRequest:

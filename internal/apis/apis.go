@@ -47,6 +47,12 @@ type ServerInterface interface {
 
 	// (POST /api/v1/links)
 	CreateNewLink(w http.ResponseWriter, r *http.Request)
+	// Delete link
+	// (DELETE /api/v1/links/{linkId})
+	DeleteShortLink(w http.ResponseWriter, r *http.Request, linkId string)
+	// Get Link Metrics
+	// (GET /api/v1/links/{linkId})
+	GetLinkMetrics(w http.ResponseWriter, r *http.Request, linkId string)
 	// Redirect to link
 	// (GET /{linkId})
 	GetLinkById(w http.ResponseWriter, r *http.Request, linkId string)
@@ -84,6 +90,62 @@ func (siw *ServerInterfaceWrapper) CreateNewLink(w http.ResponseWriter, r *http.
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CreateNewLink(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// DeleteShortLink operation middleware
+func (siw *ServerInterfaceWrapper) DeleteShortLink(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "linkId" -------------
+	var linkId string
+
+	err = runtime.BindStyledParameter("simple", false, "linkId", mux.Vars(r)["linkId"], &linkId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "linkId", Err: err})
+		return
+	}
+
+	ctx = context.WithValue(ctx, JWTScopes, []string{})
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteShortLink(w, r, linkId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetLinkMetrics operation middleware
+func (siw *ServerInterfaceWrapper) GetLinkMetrics(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "linkId" -------------
+	var linkId string
+
+	err = runtime.BindStyledParameter("simple", false, "linkId", mux.Vars(r)["linkId"], &linkId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "linkId", Err: err})
+		return
+	}
+
+	ctx = context.WithValue(ctx, JWTScopes, []string{})
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetLinkMetrics(w, r, linkId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -235,6 +297,10 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 	r.HandleFunc(options.BaseURL+"/api/v1/admin/login", wrapper.LoginAdmin).Methods("POST")
 
 	r.HandleFunc(options.BaseURL+"/api/v1/links", wrapper.CreateNewLink).Methods("POST")
+
+	r.HandleFunc(options.BaseURL+"/api/v1/links/{linkId}", wrapper.DeleteShortLink).Methods("DELETE")
+
+	r.HandleFunc(options.BaseURL+"/api/v1/links/{linkId}", wrapper.GetLinkMetrics).Methods("GET")
 
 	r.HandleFunc(options.BaseURL+"/{linkId}", wrapper.GetLinkById).Methods("GET")
 
