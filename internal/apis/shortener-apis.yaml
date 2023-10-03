@@ -1,0 +1,31 @@
+openapi: 3.1.0
+x-stoplight:
+  id: nv3zp697aowmt
+info:
+  title: shortener-apis
+  version: '1.0'
+  summary: APIs for the Shortener service
+  description: APIs for the shortener service
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  '/{linkId}':
+    parameters:
+      - schema:
+          type: string
+        name: linkId
+        in: path
+        required: true
+    get:
+      summary: Redirect to link
+      tags:
+        - Links
+      responses:
+        '302':
+          description: Found
+        '404':
+          description: Not Found
+      operationId: get-link-by-id
+      description: This endpoint redirects to the route that is shortened with this ID
+components:
+  schemas: {}

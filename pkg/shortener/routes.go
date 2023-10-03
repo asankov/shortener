@@ -6,48 +6,44 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/asankov/shortener/internal/apis"
 	"github.com/asankov/shortener/pkg/links"
 	"github.com/gorilla/mux"
 )
 
 func (s *Shortener) routes() http.Handler {
 	router := mux.NewRouter()
-	// TODO: auth
-	router.HandleFunc("/admin", s.handleAdmin).Methods(http.MethodGet)
-	router.HandleFunc("/{id}", s.handleGetLink).Methods(http.MethodGet)
+	// // TODO: auth
+	// router.HandleFunc("/admin", s.handleAdmin).Methods(http.MethodGet)
+	// router.HandleFunc("/{id}", s.handleGetLink).Methods(http.MethodGet)
 
-	router.HandleFunc("/admin/login", s.handleAdminLoginPage).Methods(http.MethodGet)
-	router.HandleFunc("/admin/login", s.handleAdminLogin).Methods(http.MethodPost)
+	// router.HandleFunc("/admin/login", s.handleAdminLoginPage).Methods(http.MethodGet)
+	// router.HandleFunc("/admin/login", s.handleAdminLogin).Methods(http.MethodPost)
 
-	// TODO: auth
-	apiRoutes := router.PathPrefix("/api/v1").Subrouter()
-	apiRoutes.HandleFunc("/links", s.handleCreateLink).Methods(http.MethodPost)
-	apiRoutes.HandleFunc("/links/{id}", s.handleDeleteLink).Methods(http.MethodDelete)
+	// // TODO: auth
+	// apiRoutes := router.PathPrefix("/api/v1").Subrouter()
+	// apiRoutes.HandleFunc("/links", s.handleCreateLink).Methods(http.MethodPost)
+	// apiRoutes.HandleFunc("/links/{id}", s.handleDeleteLink).Methods(http.MethodDelete)
 
-	// TODO
-	// apiRoutes.HandleFunc("/{id}", s.handleGetLinkMetrics).Methods(http.MethodGet)
+	// // TODO
+	// // apiRoutes.HandleFunc("/{id}", s.handleGetLinkMetrics).Methods(http.MethodGet)
 
-	fs := http.FileServer(http.Dir("./static"))
-	router.PathPrefix("/static/").Handler(http.StripPrefix("/static", fs))
+	// fs := http.FileServer(http.Dir("./static"))
+	// router.PathPrefix("/static/").Handler(http.StripPrefix("/static", fs))
 
-	return router
+	return apis.HandlerFromMux(s, router)
+
+	// return router
 }
 
-func (s *Shortener) handleGetLink(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
-	if id == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	link, err := s.db.GetByID(id)
+func (s *Shortener) GetLinkById(w http.ResponseWriter, r *http.Request, linkId string) {
+	link, err := s.db.GetByID(linkId)
 	if err != nil {
 		if errors.Is(err, links.ErrLinkNotFound) {
 			w.WriteHeader(http.StatusNotFound)
 		}
 
-		s.logger.Warn("unknown error while getting link by id", "link_id", id, "error", err)
+		s.logger.Warn("unknown error while getting link by id", "link_id", linkId, "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
