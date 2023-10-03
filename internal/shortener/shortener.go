@@ -50,6 +50,7 @@ type UserService interface {
 
 type Authenticator interface {
 	NewTokenForUser(user *users.User) (string, error)
+	DecodeToken(token string) (*users.User, error)
 }
 
 func New(config *config.Config, db Database, idGenerator IDGenerator, userService UserService, authenticator Authenticator) (*Shortener, error) {
