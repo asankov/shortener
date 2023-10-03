@@ -34,7 +34,7 @@ type User struct {
 
 func (u *User) HasRole(r Role) bool {
 	for _, role := range u.Roles {
-		if int(role) >= int(r) {
+		if int(role) <= int(r) {
 			return true
 		}
 	}
