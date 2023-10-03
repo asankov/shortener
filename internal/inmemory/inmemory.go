@@ -3,9 +3,9 @@ package inmemory
 import (
 	"errors"
 
+	"github.com/asankov/shortener/internal/links"
 	"github.com/asankov/shortener/internal/random"
 	"github.com/asankov/shortener/internal/users"
-	"github.com/asankov/shortener/pkg/links"
 )
 
 type DB struct {

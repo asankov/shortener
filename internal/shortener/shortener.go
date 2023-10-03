@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/asankov/shortener/internal/config"
+	"github.com/asankov/shortener/internal/links"
 	"github.com/asankov/shortener/internal/users"
-	"github.com/asankov/shortener/pkg/config"
-	"github.com/asankov/shortener/pkg/links"
 	"golang.org/x/exp/slog"
 )
 

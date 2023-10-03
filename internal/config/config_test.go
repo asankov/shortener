@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/asankov/shortener/pkg/config"
+	"github.com/asankov/shortener/internal/config"
 	"github.com/stretchr/testify/require"
 )
 

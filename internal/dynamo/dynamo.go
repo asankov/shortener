@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/asankov/shortener/internal/links"
 	"github.com/asankov/shortener/internal/random"
-	"github.com/asankov/shortener/pkg/links"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"

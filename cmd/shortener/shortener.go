@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/asankov/shortener/internal/auth"
+	"github.com/asankov/shortener/internal/config"
 	"github.com/asankov/shortener/internal/dynamo"
 	"github.com/asankov/shortener/internal/inmemory"
-	"github.com/asankov/shortener/pkg/config"
-	"github.com/asankov/shortener/pkg/shortener"
+	"github.com/asankov/shortener/internal/shortener"
 	"golang.org/x/exp/slog"
 )
 
