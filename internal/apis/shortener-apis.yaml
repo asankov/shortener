@@ -46,6 +46,21 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AdminLoginRequest'
+  /api/v1/links:
+    post:
+      summary: ''
+      operationId: create-new-link
+      responses:
+        '201':
+          description: Created
+      description: Endpoint that creates a new link
+      security:
+        - JWT: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateShortLinkRequest'
 components:
   schemas:
     AdminLoginRequest:
@@ -71,4 +86,21 @@ components:
           type: string
       required:
         - token
+    CreateShortLinkRequest:
+      title: CreateShortLinkRequest
+      x-stoplight:
+        id: i3nu9nw80y2qa
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+      required:
+        - url
   requestBodies: {}
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+      description: ''
