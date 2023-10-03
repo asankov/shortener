@@ -10,6 +10,47 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 jobs:
+  check-go-mod-tidy:
+    name: Check `go mod tidy`
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.20"
+      - name: Run `go mod tidy` and verify no changes
+        run: |
+          go mod tidy
+          if [ -n "$(git status --porcelain)" ]
+          then
+              git status --short; \
+              echo; \
+              echo "Did you remember to run `go mod tidy`? Run `go mod tidy` and commit the result."; \
+              exit 1; \
+          fi
+  check-go-generate:
+    name: Check `go generate`
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.20"
+      - name: Install tools
+        run: |
+          go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
+      - name: Run `go generate ./...` and verify no changes
+        run: |
+          go generate ./...
+          if [ -n "$(git status --porcelain)" ]
+          then
+              git status --short; \
+              echo; \
+              echo "Did you remember to run `go generate ./...`? Run `go generate ./...` and commit the result."; \
+              exit 1; \
+          fi
   build:
     name: Build Shortener
     runs-on: ubuntu-latest
