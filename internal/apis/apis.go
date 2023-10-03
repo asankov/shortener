@@ -86,7 +86,7 @@ func (siw *ServerInterfaceWrapper) LoginAdmin(w http.ResponseWriter, r *http.Req
 func (siw *ServerInterfaceWrapper) CreateNewLink(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, JWTScopes, []string{})
+	ctx = context.WithValue(ctx, JWTScopes, []string{"admin"})
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CreateNewLink(w, r)
@@ -114,7 +114,7 @@ func (siw *ServerInterfaceWrapper) DeleteShortLink(w http.ResponseWriter, r *htt
 		return
 	}
 
-	ctx = context.WithValue(ctx, JWTScopes, []string{})
+	ctx = context.WithValue(ctx, JWTScopes, []string{"admin"})
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.DeleteShortLink(w, r, linkId)
@@ -142,7 +142,7 @@ func (siw *ServerInterfaceWrapper) GetLinkMetrics(w http.ResponseWriter, r *http
 		return
 	}
 
-	ctx = context.WithValue(ctx, JWTScopes, []string{})
+	ctx = context.WithValue(ctx, JWTScopes, []string{"admin"})
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetLinkMetrics(w, r, linkId)
