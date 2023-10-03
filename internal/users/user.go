@@ -1,6 +1,10 @@
 package users
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+)
 
 // Role represents a user role.
 //
@@ -35,4 +39,15 @@ func (u *User) HasRole(r Role) bool {
 		}
 	}
 	return false
+}
+
+func RoleFrom(s string) (Role, error) {
+	switch strings.ToLower(s) {
+	case "admin":
+		return RoleAdmin, nil
+	case "user":
+		return RoleUser, nil
+	default:
+		return -1, fmt.Errorf("%w: %v", ErrInvalidRole, s)
+	}
 }
