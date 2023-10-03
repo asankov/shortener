@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/asankov/shortener/internal/apis"
-	"github.com/asankov/shortener/pkg/links"
+	"github.com/asankov/shortener/internal/links"
 )
 
 func (s *Shortener) routes() http.Handler {
