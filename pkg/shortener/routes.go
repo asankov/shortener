@@ -3,27 +3,14 @@ package shortener
 import (
 	"encoding/json"
 	"errors"
-	"html/template"
 	"net/http"
 
 	"github.com/asankov/shortener/internal/apis"
 	"github.com/asankov/shortener/pkg/links"
-	"github.com/gorilla/mux"
 )
 
 func (s *Shortener) routes() http.Handler {
-	router := mux.NewRouter()
-	// // TODO: auth
-	router.HandleFunc("/admin", s.handleAdmin).Methods(http.MethodGet)
-
-	router.HandleFunc("/admin/login", s.handleAdminLoginPage).Methods(http.MethodGet)
-
-	fs := http.FileServer(http.Dir("./static"))
-	router.PathPrefix("/static/").Handler(http.StripPrefix("/static", fs))
-
-	return apis.HandlerFromMux(s, router)
-
-	// return router
+	return apis.Handler(s)
 }
 
 func (s *Shortener) GetLinkById(w http.ResponseWriter, r *http.Request, linkId string) {
@@ -107,33 +94,4 @@ func (s *Shortener) DeleteShortLink(w http.ResponseWriter, r *http.Request, link
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
-
-var (
-	tmpl               = template.Must(template.ParseFiles("./internal/ui/template/admin-page.html"))
-	adminLoginPageTmpl = template.Must(template.ParseFiles("./internal/ui/template/admin-login.html"))
-)
-
-func (s *Shortener) handleAdmin(w http.ResponseWriter, r *http.Request) {
-	type pageData struct {
-		Links []*links.Link
-	}
-
-	links, err := s.db.GetAll()
-	if err != nil {
-		s.logger.Error("error while getting all links", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-	rr := pageData{
-		Links: links,
-	}
-	if err := tmpl.Execute(w, rr); err != nil {
-		s.logger.Error("Error while executing template", "error", err)
-	}
-}
-
-func (s *Shortener) handleAdminLoginPage(w http.ResponseWriter, r *http.Request) {
-	if err := adminLoginPageTmpl.Execute(w, r); err != nil {
-		s.logger.Error("Error while executing template", "error", err)
-	}
 }
