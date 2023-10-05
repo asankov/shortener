@@ -41,7 +41,7 @@ func (h *handler) LoginAdmin(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	user, err := h.userService.Get(req.Username, req.Password)
+	user, err := h.userService.GetUser(req.Username, req.Password)
 	if err != nil {
 		h.logger.Error("error while getting user", "error", err, "username", req.Username)
 		w.WriteHeader(http.StatusInternalServerError)

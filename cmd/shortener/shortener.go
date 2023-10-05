@@ -22,12 +22,12 @@ func run() error {
 		return err
 	}
 
-	db, idGenerator, userService, authenticator, err := initFromConfig(config)
+	db, idGenerator, userService, authenticator, configService, err := initFromConfig(config)
 	if err != nil {
 		return err
 	}
 
-	shortener, err := shortener.New(config, db, idGenerator, userService, authenticator)
+	shortener, err := shortener.New(config, db, idGenerator, userService, authenticator, configService)
 	if err != nil {
 		return err
 	}
@@ -35,19 +35,19 @@ func run() error {
 	return shortener.Start()
 }
 
-func initFromConfig(config *config.Config) (shortener.Database, shortener.IDGenerator, shortener.UserService, shortener.Authenticator, error) {
+func initFromConfig(config *config.Config) (shortener.Database, shortener.IDGenerator, shortener.UserService, shortener.Authenticator, shortener.ConfigService, error) {
 	authenticator := auth.NewAutheniticator(config.Secret)
 
 	if config.UseInMemoryDB {
 		db := inmemory.NewDB()
 
-		return db, db, db, authenticator, nil
+		return db, db, db, authenticator, db, nil
 	}
 	db, err := dynamo.New()
 	if err != nil {
-		return nil, nil, nil, authenticator, err
+		return nil, nil, nil, authenticator, nil, err
 	}
 
 	// TODO: return user service
-	return db, db, nil, authenticator, nil
+	return db, db, db, authenticator, db, nil
 }

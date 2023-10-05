@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: shortener
-        image: ghcr.io/asankov/shortener:latest
+        image: ghcr.io/asankov/shortener:main
         resources:
           limits:
             memory: "128Mi"
@@ -30,7 +30,7 @@ kind: Service
 metadata:
   name: shortener
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: shortener
   ports:

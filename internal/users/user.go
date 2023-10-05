@@ -27,6 +27,19 @@ func (r Role) MarshalJSON() ([]byte, error) {
 	return json.Marshal(r.String())
 }
 
+func (r *Role) UnmarshalJSON(b []byte) error {
+	roleString := string(b)
+	roleString = strings.TrimRight(roleString, `"`)
+	roleString = strings.TrimLeft(roleString, `"`)
+	role, err := RoleFrom(roleString)
+	if err != nil {
+		return err
+	}
+	*r = role
+
+	return nil
+}
+
 type User struct {
 	Email string `json:"email"`
 	Roles []Role `json:"roles"`
