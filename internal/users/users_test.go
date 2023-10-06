@@ -59,9 +59,26 @@ func TestRoleFrom(t *testing.T) {
 }
 
 func TestRole(t *testing.T) {
-	for _, role := range []users.Role{users.RoleAdmin, users.RoleUser, users.Role(5)} {
-		res, err := json.Marshal(role)
-		require.NoError(t, err)
-		require.Equal(t, fmt.Sprintf(`"%s"`, role.String()), string(res))
-	}
+	t.Run("TestMarshall", func(t *testing.T) {
+		for _, role := range []users.Role{users.RoleAdmin, users.RoleUser, users.Role(5)} {
+			res, err := json.Marshal(role)
+			require.NoError(t, err)
+			require.Equal(t, fmt.Sprintf(`"%s"`, role.String()), string(res))
+		}
+	})
+
+	t.Run("TestUnmarshall", func(t *testing.T) {
+		for _, roleString := range []string{`"ADMIN"`, `"admin"`, `"aDmin"`} {
+			t.Run(roleString, func(t *testing.T) {
+				var r users.Role
+				err := json.Unmarshal([]byte(roleString), &r)
+
+				require.NoError(t, err)
+				require.Equal(t, users.RoleAdmin, r)
+			})
+		}
+
+		var r users.Role
+		require.Error(t, json.Unmarshal([]byte(""), &r))
+	})
 }
