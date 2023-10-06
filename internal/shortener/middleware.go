@@ -53,6 +53,7 @@ func (h *handler) authenticated(next http.Handler) http.Handler {
 
 			if user.HasRole(role) {
 				next.ServeHTTP(w, r)
+				return
 			}
 		}
 

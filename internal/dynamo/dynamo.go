@@ -114,9 +114,12 @@ func (d *Database) Create(id string, url string) error {
 			idField:  idValue,
 			urlField: urlValue,
 		},
-		// TODO: does that work?
 		ConditionExpression: aws.String("attribute_not_exists(id)"),
 	}); err != nil {
+		var ccfe *types.ConditionalCheckFailedException
+		if errors.As(err, &ccfe) {
+			return links.ErrLinkAlreadyExists
+		}
 		return err
 	}
 

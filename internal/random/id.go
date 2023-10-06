@@ -8,7 +8,7 @@ import (
 var r = rand.New(rand.NewSource(time.Now().Unix()))
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-const allBytes = letterBytes + "!#$%&()*+,-./0123456789:;<=>?[\\]^_{|}~"
+const allBytes = letterBytes + "!#$%&*+,-./0123456789:;<=>?[]]^_~"
 
 // ID generates random ID with lenght n.
 func ID(n int) string {
