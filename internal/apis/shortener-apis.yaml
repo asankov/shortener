@@ -53,9 +53,14 @@ paths:
       responses:
         '201':
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateShortLinkResponse'
       description: Endpoint that creates a new link
       security:
-        - JWT: ["admin"]
+        - JWT:
+            - admin
       requestBody:
         content:
           application/json:
@@ -75,7 +80,8 @@ paths:
       operationId: get-link-metrics
       description: Endpoint for getting the metrics of a shortened link
       security:
-        - JWT: ["admin"]
+        - JWT:
+            - admin
     delete:
       summary: Delete link
       operationId: delete-short-link
@@ -83,7 +89,8 @@ paths:
         '204':
           description: No Content
       security:
-        - JWT: ["admin"]
+        - JWT:
+            - admin
 components:
   schemas:
     AdminLoginRequest:
@@ -120,6 +127,19 @@ components:
         url:
           type: string
       required:
+        - url
+    CreateShortLinkResponse:
+      title: CreateShortLinkResponse
+      x-stoplight:
+        id: xuvczey6mlyiy
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+      required:
+        - id
         - url
   requestBodies: {}
   securitySchemes:
