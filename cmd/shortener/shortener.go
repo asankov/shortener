@@ -48,6 +48,5 @@ func initFromConfig(config *config.Config) (shortener.Database, shortener.IDGene
 		return nil, nil, nil, authenticator, nil, err
 	}
 
-	// TODO: return user service
 	return db, db, db, authenticator, db, nil
 }
