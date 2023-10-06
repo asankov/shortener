@@ -33,6 +33,12 @@ type CreateShortLinkRequest struct {
 	Url string  `json:"url"`
 }
 
+// CreateShortLinkResponse defines model for CreateShortLinkResponse.
+type CreateShortLinkResponse struct {
+	Id  string `json:"id"`
+	Url string `json:"url"`
+}
+
 // LoginAdminJSONRequestBody defines body for LoginAdmin for application/json ContentType.
 type LoginAdminJSONRequestBody = AdminLoginRequest
 
