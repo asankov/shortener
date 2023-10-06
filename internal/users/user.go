@@ -3,6 +3,7 @@ package users
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -61,6 +62,10 @@ func RoleFrom(s string) (Role, error) {
 	case "user":
 		return RoleUser, nil
 	default:
-		return -1, fmt.Errorf("%w: %v", ErrInvalidRole, s)
+		i, err := strconv.Atoi(s)
+		if err != nil {
+			return -1, fmt.Errorf("%w: %v", ErrInvalidRole, err)
+		}
+		return Role(i), nil
 	}
 }

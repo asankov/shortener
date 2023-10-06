@@ -29,12 +29,12 @@ func TestRoleFrom(t *testing.T) {
 	}{
 		{
 			name:     "ADMIN",
-			variants: []string{"admin", "ADMIN", "Admin", "aDmin", "adMIN"},
+			variants: []string{"admin", "ADMIN", "Admin", "aDmin", "adMIN", "0"},
 			role:     users.RoleAdmin,
 		},
 		{
 			name:     "USER",
-			variants: []string{"user", "USER", "User", "uSer", "usER"},
+			variants: []string{"user", "USER", "User", "uSer", "usER", "10"},
 			role:     users.RoleUser,
 		},
 	}

@@ -2,7 +2,6 @@ package dynamo
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/asankov/shortener/internal/users"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -27,8 +26,6 @@ func (d *Database) CreateUser(email, password string, roles []users.Role) error 
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(hashedPassword))
-
 	emailValue, err := attributevalue.Marshal(email)
 	if err != nil {
 		return err
@@ -71,17 +68,26 @@ func (d *Database) GetUser(email, password string) (*users.User, error) {
 		return nil, users.ErrUserNotFound
 	}
 
-	hashedPassword := out.Item[passwordField].(*types.AttributeValueMemberS).Value
-	// Comparing the password with the hash
-	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	hashedPassword := out.Item[passwordField].(*types.AttributeValueMemberB).Value
+	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
 	if err != nil {
 		return nil, err
 	}
 
+	rolesAttributeValues := out.Item[rolesField].(*types.AttributeValueMemberL).Value
+	roles := make([]users.Role, 0, len(rolesAttributeValues))
+	for _, roleAttributeValue := range rolesAttributeValues {
+		roleIntValue := roleAttributeValue.(*types.AttributeValueMemberN).Value
+		role, err := users.RoleFrom(roleIntValue)
+		if err != nil {
+			return nil, err
+		}
+
+		roles = append(roles, role)
+	}
 	return &users.User{
 		Email: out.Item[emailField].(*types.AttributeValueMemberS).Value,
-		// TODO
-		Roles: []users.Role{},
+		Roles: roles,
 	}, nil
 }
 
