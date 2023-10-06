@@ -94,6 +94,14 @@ func (h *handler) CreateNewLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(apis.CreateShortLinkResponse{
+		Id:  *link.Id,
+		Url: link.Url,
+	}); err != nil {
+		h.logger.Error("error while encoding response", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *handler) GetLinkMetrics(w http.ResponseWriter, r *http.Request, linkId string) {
