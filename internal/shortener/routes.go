@@ -74,17 +74,17 @@ func (h *handler) CreateNewLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if link.Id == nil {
+	if link.ID == nil {
 		id, err := h.idGenerator.GenerateID()
 		if err != nil {
 			h.logger.Error("Error while generating ID", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		link.Id = &id
+		link.ID = &id
 	}
 
-	if err := h.db.Create(*link.Id, link.Url); err != nil {
+	if err := h.db.Create(*link.ID, link.URL); err != nil {
 		if errors.Is(err, links.ErrLinkAlreadyExists) {
 			w.WriteHeader(http.StatusConflict)
 			return
@@ -97,8 +97,8 @@ func (h *handler) CreateNewLink(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(apis.CreateShortLinkResponse{
-		Id:  *link.Id,
-		Url: link.Url,
+		ID:  *link.ID,
+		URL: link.URL,
 	}); err != nil {
 		h.logger.Error("error while encoding response", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -106,22 +106,22 @@ func (h *handler) CreateNewLink(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handler) GetLinkMetrics(w http.ResponseWriter, r *http.Request, linkId string) {
-	link, err := h.db.GetByID(linkId)
+func (h *handler) GetLinkMetrics(w http.ResponseWriter, r *http.Request, linkID string) {
+	link, err := h.db.GetByID(linkID)
 	if err != nil {
 		if errors.Is(err, links.ErrLinkNotFound) {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		h.logger.Warn("unknown error while getting link by id", "link_id", linkId, "error", err)
+		h.logger.Warn("unknown error while getting link by id", "link_id", linkID, "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(apis.GetLinkMetricsResponse{
-		Id:  link.ID,
-		Url: link.URL,
+		ID:  link.ID,
+		URL: link.URL,
 		Metrics: apis.LinkMetrics{
 			Clicks: link.Metrics.Clicks,
 		},

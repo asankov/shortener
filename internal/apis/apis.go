@@ -29,21 +29,21 @@ type AdminLoginResponse struct {
 
 // CreateShortLinkRequest defines model for CreateShortLinkRequest.
 type CreateShortLinkRequest struct {
-	Id  *string `json:"id,omitempty"`
-	Url string  `json:"url"`
+	ID  *string `json:"id,omitempty"`
+	URL string  `json:"url"`
 }
 
 // CreateShortLinkResponse defines model for CreateShortLinkResponse.
 type CreateShortLinkResponse struct {
-	Id  string `json:"id"`
-	Url string `json:"url"`
+	ID  string `json:"id"`
+	URL string `json:"url"`
 }
 
 // GetLinkMetricsResponse defines model for GetLinkMetricsResponse.
 type GetLinkMetricsResponse struct {
-	Id      string      `json:"id"`
+	ID      string      `json:"id"`
 	Metrics LinkMetrics `json:"metrics"`
-	Url     string      `json:"url"`
+	URL     string      `json:"url"`
 }
 
 // LinkMetrics defines model for LinkMetrics.
@@ -67,13 +67,13 @@ type ServerInterface interface {
 	CreateNewLink(w http.ResponseWriter, r *http.Request)
 	// Delete link
 	// (DELETE /api/v1/links/{linkId})
-	DeleteShortLink(w http.ResponseWriter, r *http.Request, linkId string)
+	DeleteShortLink(w http.ResponseWriter, r *http.Request, linkID string)
 	// Get Link Metrics
 	// (GET /api/v1/links/{linkId})
-	GetLinkMetrics(w http.ResponseWriter, r *http.Request, linkId string)
+	GetLinkMetrics(w http.ResponseWriter, r *http.Request, linkID string)
 	// Redirect to link
 	// (GET /{linkId})
-	GetLinkById(w http.ResponseWriter, r *http.Request, linkId string)
+	GetLinkById(w http.ResponseWriter, r *http.Request, linkID string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -124,9 +124,9 @@ func (siw *ServerInterfaceWrapper) DeleteShortLink(w http.ResponseWriter, r *htt
 	var err error
 
 	// ------------- Path parameter "linkId" -------------
-	var linkId string
+	var linkID string
 
-	err = runtime.BindStyledParameter("simple", false, "linkId", mux.Vars(r)["linkId"], &linkId)
+	err = runtime.BindStyledParameter("simple", false, "linkId", mux.Vars(r)["linkId"], &linkID)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "linkId", Err: err})
 		return
@@ -135,7 +135,7 @@ func (siw *ServerInterfaceWrapper) DeleteShortLink(w http.ResponseWriter, r *htt
 	ctx = context.WithValue(ctx, JWTScopes, []string{"admin"})
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteShortLink(w, r, linkId)
+		siw.Handler.DeleteShortLink(w, r, linkID)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -152,9 +152,9 @@ func (siw *ServerInterfaceWrapper) GetLinkMetrics(w http.ResponseWriter, r *http
 	var err error
 
 	// ------------- Path parameter "linkId" -------------
-	var linkId string
+	var linkID string
 
-	err = runtime.BindStyledParameter("simple", false, "linkId", mux.Vars(r)["linkId"], &linkId)
+	err = runtime.BindStyledParameter("simple", false, "linkId", mux.Vars(r)["linkId"], &linkID)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "linkId", Err: err})
 		return
@@ -163,7 +163,7 @@ func (siw *ServerInterfaceWrapper) GetLinkMetrics(w http.ResponseWriter, r *http
 	ctx = context.WithValue(ctx, JWTScopes, []string{"admin"})
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetLinkMetrics(w, r, linkId)
+		siw.Handler.GetLinkMetrics(w, r, linkID)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -180,16 +180,16 @@ func (siw *ServerInterfaceWrapper) GetLinkById(w http.ResponseWriter, r *http.Re
 	var err error
 
 	// ------------- Path parameter "linkId" -------------
-	var linkId string
+	var linkID string
 
-	err = runtime.BindStyledParameter("simple", false, "linkId", mux.Vars(r)["linkId"], &linkId)
+	err = runtime.BindStyledParameter("simple", false, "linkId", mux.Vars(r)["linkId"], &linkID)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "linkId", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetLinkById(w, r, linkId)
+		siw.Handler.GetLinkById(w, r, linkID)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
