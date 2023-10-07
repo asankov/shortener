@@ -16,41 +16,22 @@ func TestDefaults(t *testing.T) {
 	config, err := config.NewFromEnv()
 
 	require.NoError(t, err)
-	require.Equal(t, false, config.UseSSL)
 	require.Equal(t, 8080, config.Port)
-	require.Equal(t, "", config.SSL.CertFile)
-	require.Equal(t, "", config.SSL.KeyFile)
 	require.Equal(t, secret, config.Secret)
 	require.False(t, config.ForceGenerateAdminUser)
 }
 
 func TestAllSet(t *testing.T) {
-	setenv(t, "SHORTENER_USE_SSL", "true")
 	setenv(t, "SHORTENER_PORT", "1234")
-	setenv(t, "SHORTENER_SSL_CERT_FILE", "cert.pem")
-	setenv(t, "SHORTENER_SSL_KEY_FILE", "key.pem")
 	setenv(t, "SHORTENER_SECRET", secret)
 	setenv(t, "SHORTENER_FORCE_GENERATE_ADMIN_USER", "true")
 
 	config, err := config.NewFromEnv()
 
 	require.NoError(t, err)
-	require.Equal(t, true, config.UseSSL)
 	require.Equal(t, 1234, config.Port)
-	require.Equal(t, "cert.pem", config.SSL.CertFile)
-	require.Equal(t, "key.pem", config.SSL.KeyFile)
 	require.Equal(t, secret, config.Secret)
 	require.True(t, config.ForceGenerateAdminUser)
-}
-
-func TestUseSSLSetButNoSSLConfig(t *testing.T) {
-	setenv(t, "SHORTENER_USE_SSL", "true")
-	setenv(t, "SHORTENER_SECRET", secret)
-
-	_, err := config.NewFromEnv()
-
-	require.Error(t, err)
-	require.ErrorIs(t, err, config.ErrNoSSLConfig)
 }
 
 func TestRequired(t *testing.T) {

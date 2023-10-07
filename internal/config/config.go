@@ -9,9 +9,7 @@ import (
 var ErrNoSSLConfig = errors.New("no SSL config provided")
 
 type Config struct {
-	UseSSL bool `default:"false" split_words:"true"`
-	Port   int  `default:"8080"`
-	SSL    SSL
+	Port int `default:"8080"`
 
 	// Secret is the secret used to generate the JWT token.
 	Secret string `required:"true"`
@@ -30,10 +28,6 @@ func NewFromEnv() (*Config, error) {
 	var config Config
 	if err := envconfig.Process("SHORTENER", &config); err != nil {
 		return nil, err
-	}
-
-	if config.UseSSL && (config.SSL.CertFile == "" || config.SSL.KeyFile == "") {
-		return nil, ErrNoSSLConfig
 	}
 
 	return &config, nil

@@ -15,10 +15,6 @@ import (
 type Shortener struct {
 	server http.Server
 
-	useSSL   bool
-	certFile string
-	keyFile  string
-
 	logger *slog.Logger
 
 	handler *handler
@@ -66,9 +62,6 @@ type ConfigService interface {
 func New(config *config.Config, db Database, idGenerator IDGenerator, userService UserService, authenticator Authenticator, configService ConfigService) (*Shortener, error) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	s := &Shortener{
-		useSSL:   config.UseSSL,
-		certFile: config.SSL.CertFile,
-		keyFile:  config.SSL.KeyFile,
 		server: http.Server{
 			Addr: fmt.Sprintf(":%d", config.Port),
 		},
@@ -124,11 +117,6 @@ func (s *Shortener) Start() error {
 		return err
 	}
 
-	if s.useSSL {
-		s.logger.Info(fmt.Sprintf("Starting server on address [%s] with SSL\n", s.server.Addr))
-		return s.server.ListenAndServeTLS(s.certFile, s.keyFile)
-	}
-
-	s.logger.Info(fmt.Sprintf("Starting server on address [%s] with no SSL\n", s.server.Addr))
+	s.logger.Info(fmt.Sprintf("Starting server on address [%s]\n", s.server.Addr))
 	return s.server.ListenAndServe()
 }
