@@ -17,17 +17,23 @@ import (
 
 var (
 	tableName = aws.String("links")
+)
 
+const (
 	idField      = "id"
 	urlField     = "url"
 	metricsField = "metrics"
 	clicksField  = "clicks"
 
 	region = "eu-west-1"
+
+	maxAllowedConflicts = 50
 )
 
+// Database represents a DynamoDB database.
 type Database struct {
 	client *dynamodb.Client
+	random *random.Random
 
 	logger *slog.Logger
 }
@@ -46,6 +52,9 @@ func buildDynamoDBClient() (*dynamodb.Client, error) {
 	return dynamodbClient, nil
 }
 
+// New creates a new database will config loaded from the environment.
+//
+// It returns an error if not possible to do so.
 func New() (*Database, error) {
 	client, err := buildDynamoDBClient()
 	if err != nil {
@@ -53,13 +62,16 @@ func New() (*Database, error) {
 	}
 	return &Database{
 		client: client,
+		random: random.New(),
 	}, nil
 }
 
+// SetLogger sets the logger used in the Database.
 func (d *Database) SetLogger(l *slog.Logger) {
 	d.logger = l
 }
 
+// GetByID looks up a link by ID and returns it.
 func (d *Database) GetByID(id string) (*links.Link, error) {
 	out, err := d.client.GetItem(context.Background(), &dynamodb.GetItemInput{
 		TableName: tableName,
@@ -80,6 +92,7 @@ func (d *Database) GetByID(id string) (*links.Link, error) {
 	}, nil
 }
 
+// GetAll returns all links.
 func (d *Database) GetAll() ([]*links.Link, error) {
 	scanOutput, err := d.client.Scan(context.Background(), &dynamodb.ScanInput{
 		TableName: tableName,
@@ -101,10 +114,12 @@ func (d *Database) GetAll() ([]*links.Link, error) {
 	return result, nil
 }
 
+// Create creates a new link with the provided ID and URL.
 func (d *Database) Create(id string, url string) error {
 	return d.saveLink(id, url, &links.Metrics{Clicks: 0}, &saveOptions{conditionalExpression: aws.String("attribute_not_exists(id)")})
 }
 
+// Delete deletes the link with the given ID.
 func (d *Database) Delete(id string) error {
 	idValue, err := attributevalue.Marshal(id)
 	if err != nil {
@@ -119,6 +134,7 @@ func (d *Database) Delete(id string) error {
 	return err
 }
 
+// IncrementClicks increments the clicks for the link with the given ID.
 func (d *Database) IncrementClicks(id string) error {
 	link, err := d.GetByID(id)
 	if err != nil {
@@ -177,13 +193,12 @@ func (d *Database) saveLink(id, url string, metrics *links.Metrics, opts *saveOp
 	return nil
 }
 
+// GenerateID generates a new ID and ensures that it is not already in use.
 func (d *Database) GenerateID() (string, error) {
 	var (
-		conflictCount        int
+		conflictCount        int = 0
 		allowedConflictCount int = 4
 		idLength             int = 3
-
-		maxAllowedConflicts = 50
 	)
 	for {
 		if conflictCount > allowedConflictCount {
@@ -195,7 +210,7 @@ func (d *Database) GenerateID() (string, error) {
 			return "", links.ErrIDNotGenerated
 		}
 
-		id := random.ID(idLength)
+		id := d.random.ID(idLength)
 		// This is not optimal as DynamoDB reads are not free.
 		// Probably best to substitute it with some sort of cache at some point.
 		_, err := d.GetByID(id)

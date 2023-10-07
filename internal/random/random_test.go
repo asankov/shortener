@@ -8,6 +8,8 @@ import (
 )
 
 func TestRandom(t *testing.T) {
+	random := random.New()
+
 	id := random.ID(5)
 	require.Len(t, id, 5)
 

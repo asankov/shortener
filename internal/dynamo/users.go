@@ -21,6 +21,7 @@ const (
 	rolesField    = "roles"
 )
 
+// CreateUser creates a new user with the given properties.
 func (d *Database) CreateUser(email, password string, roles []users.Role) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -54,6 +55,7 @@ func (d *Database) CreateUser(email, password string, roles []users.Role) error 
 	return nil
 }
 
+// GetUser looks up a user by this email and password.
 func (d *Database) GetUser(email, password string) (*users.User, error) {
 	out, err := d.client.GetItem(context.Background(), &dynamodb.GetItemInput{
 		TableName: usersTableName,
@@ -91,6 +93,7 @@ func (d *Database) GetUser(email, password string) (*users.User, error) {
 	}, nil
 }
 
+// ShouldCreateInitialUser returns true if the users table is empty, e.g. there are no users in the database.
 func (d *Database) ShouldCreateInitialUser() (bool, error) {
 	scanOutput, err := d.client.Scan(context.Background(), &dynamodb.ScanInput{
 		TableName: usersTableName,
