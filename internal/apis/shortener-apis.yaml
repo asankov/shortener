@@ -14,6 +14,7 @@ paths:
       - schema:
           type: string
         name: linkId
+        x-go-name: linkID
         in: path
         required: true
     get:
@@ -71,6 +72,7 @@ paths:
       - schema:
           type: string
         name: linkId
+        x-go-name: linkID
         in: path
         required: true
     get:
@@ -130,8 +132,10 @@ components:
       properties:
         id:
           type: string
+          x-go-name: ID
         url:
           type: string
+          x-go-name: URL
       required:
         - url
     CreateShortLinkResponse:
@@ -142,8 +146,10 @@ components:
       properties:
         id:
           type: string
+          x-go-name: ID
         url:
           type: string
+          x-go-name: URL
       required:
         - id
         - url
@@ -155,8 +161,10 @@ components:
       properties:
         id:
           type: string
+          x-go-name: ID
         url:
           type: string
+          x-go-name: URL
         metrics:
           $ref: '#/components/schemas/LinkMetrics'
       required:
