@@ -76,7 +76,13 @@ paths:
     get:
       summary: Get Link Metrics
       tags: []
-      responses: {}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLinkMetricsResponse'
       operationId: get-link-metrics
       description: Endpoint for getting the metrics of a shortened link
       security:
@@ -141,6 +147,32 @@ components:
       required:
         - id
         - url
+    GetLinkMetricsResponse:
+      title: GetLinkMetricsResponse
+      x-stoplight:
+        id: 3rth01ewn733o
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+        metrics:
+          $ref: '#/components/schemas/LinkMetrics'
+      required:
+        - id
+        - url
+        - metrics
+    LinkMetrics:
+      title: LinkMetrics
+      x-stoplight:
+        id: yrsqmctmbk6df
+      type: object
+      properties:
+        clicks:
+          type: integer
+      required:
+        - clicks
   requestBodies: {}
   securitySchemes:
     JWT:
