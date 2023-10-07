@@ -107,7 +107,29 @@ func (h *handler) CreateNewLink(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) GetLinkMetrics(w http.ResponseWriter, r *http.Request, linkId string) {
-	panic("not implemented")
+	link, err := h.db.GetByID(linkId)
+	if err != nil {
+		if errors.Is(err, links.ErrLinkNotFound) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		h.logger.Warn("unknown error while getting link by id", "link_id", linkId, "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(apis.GetLinkMetricsResponse{
+		Id:  link.ID,
+		Url: link.URL,
+		Metrics: apis.LinkMetrics{
+			Clicks: link.Metrics.Clicks,
+		},
+	}); err != nil {
+		h.logger.Error("error while encoding response", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *handler) DeleteShortLink(w http.ResponseWriter, r *http.Request, linkID string) {
