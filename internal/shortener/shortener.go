@@ -41,6 +41,7 @@ type Database interface {
 
 	Create(id string, url string) error
 	Delete(id string) error
+	IncrementClicks(id string) error
 }
 
 type IDGenerator interface {

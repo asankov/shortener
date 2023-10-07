@@ -3,6 +3,7 @@ package dynamo
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	"github.com/asankov/shortener/internal/links"
 	"github.com/asankov/shortener/internal/random"
@@ -17,8 +18,10 @@ import (
 var (
 	tableName = aws.String("links")
 
-	idField  = "id"
-	urlField = "url"
+	idField      = "id"
+	urlField     = "url"
+	metricsField = "metrics"
+	clicksField  = "clicks"
 
 	region = "eu-west-1"
 )
@@ -99,31 +102,7 @@ func (d *Database) GetAll() ([]*links.Link, error) {
 }
 
 func (d *Database) Create(id string, url string) error {
-	idValue, err := attributevalue.Marshal(id)
-	if err != nil {
-		return err
-	}
-	urlValue, err := attributevalue.Marshal(url)
-	if err != nil {
-		return err
-	}
-
-	if _, err = d.client.PutItem(context.Background(), &dynamodb.PutItemInput{
-		TableName: tableName,
-		Item: map[string]types.AttributeValue{
-			idField:  idValue,
-			urlField: urlValue,
-		},
-		ConditionExpression: aws.String("attribute_not_exists(id)"),
-	}); err != nil {
-		var ccfe *types.ConditionalCheckFailedException
-		if errors.As(err, &ccfe) {
-			return links.ErrLinkAlreadyExists
-		}
-		return err
-	}
-
-	return nil
+	return d.saveLink(id, url, &links.Metrics{Clicks: 0}, &saveOptions{conditionalExpression: aws.String("attribute_not_exists(id)")})
 }
 
 func (d *Database) Delete(id string) error {
@@ -138,6 +117,64 @@ func (d *Database) Delete(id string) error {
 		},
 	})
 	return err
+}
+
+func (d *Database) IncrementClicks(id string) error {
+	link, err := d.GetByID(id)
+	if err != nil {
+		return err
+	}
+
+	return d.saveLink(link.ID, link.URL, &links.Metrics{Clicks: link.Metrics.Clicks + 1}, nil)
+}
+
+type saveOptions struct {
+	conditionalExpression *string
+}
+
+func (d *Database) saveLink(id, url string, metrics *links.Metrics, opts *saveOptions) error {
+	if opts == nil {
+		opts = &saveOptions{}
+	}
+
+	idValue, err := attributevalue.Marshal(id)
+	if err != nil {
+		return err
+	}
+	urlValue, err := attributevalue.Marshal(url)
+	if err != nil {
+		return err
+	}
+
+	metricsValue := &types.AttributeValueMemberM{
+		Value: map[string]types.AttributeValue{
+			clicksField: &types.AttributeValueMemberN{Value: strconv.Itoa(metrics.Clicks)},
+		},
+	}
+
+	putItemInput := &dynamodb.PutItemInput{
+		TableName: tableName,
+		Item: map[string]types.AttributeValue{
+			idField:      idValue,
+			urlField:     urlValue,
+			metricsField: metricsValue,
+		},
+	}
+	if opts.conditionalExpression != nil {
+		putItemInput.ConditionExpression = opts.conditionalExpression
+	}
+
+	if _, err = d.client.PutItem(context.Background(), putItemInput); err != nil {
+		if opts.conditionalExpression != nil {
+			var ccfe *types.ConditionalCheckFailedException
+			if errors.As(err, &ccfe) {
+				return links.ErrLinkAlreadyExists
+			}
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (d *Database) GenerateID() (string, error) {

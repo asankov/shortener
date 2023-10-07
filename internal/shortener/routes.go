@@ -29,7 +29,9 @@ func (h *handler) GetLinkById(w http.ResponseWriter, r *http.Request, linkId str
 		return
 	}
 
-	// TODO: increment the number of clicks
+	if err := h.db.IncrementClicks(linkId); err != nil {
+		h.logger.Warn("error while incrementing number of clicks", "link_id", linkId, "error", err)
+	}
 
 	http.Redirect(w, r, link.URL, http.StatusFound)
 }
