@@ -17,6 +17,8 @@ type Config struct {
 	Secret string `required:"true"`
 
 	UseInMemoryDB bool `envconfig:"SHORTENER_USE_IN_MEMORY_DB"`
+
+	ForceGenerateAdminUser bool `split_words:"true"`
 }
 
 type SSL struct {
