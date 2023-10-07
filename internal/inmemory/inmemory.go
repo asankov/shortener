@@ -9,8 +9,9 @@ import (
 )
 
 type DB struct {
-	links map[string]*links.Link
-	users map[string]*users.User
+	links  map[string]*links.Link
+	users  map[string]*users.User
+	random *random.Random
 }
 
 func NewDB() *DB {
@@ -22,6 +23,7 @@ func NewDB() *DB {
 				Roles: []users.Role{users.RoleAdmin},
 			},
 		},
+		random: random.New(),
 	}
 }
 
@@ -78,7 +80,7 @@ func (d *DB) GenerateID() (string, error) {
 			return "", links.ErrIDNotGenerated
 		}
 
-		id := random.ID(idLength)
+		id := d.random.ID(idLength)
 		_, err := d.GetByID(id)
 
 		// An item with this ID is not found, so we can safely use it.
