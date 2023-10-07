@@ -21,6 +21,7 @@ func TestDefaults(t *testing.T) {
 	require.Equal(t, "", config.SSL.CertFile)
 	require.Equal(t, "", config.SSL.KeyFile)
 	require.Equal(t, secret, config.Secret)
+	require.False(t, config.ForceGenerateAdminUser)
 }
 
 func TestAllSet(t *testing.T) {
@@ -29,6 +30,7 @@ func TestAllSet(t *testing.T) {
 	setenv(t, "SHORTENER_SSL_CERT_FILE", "cert.pem")
 	setenv(t, "SHORTENER_SSL_KEY_FILE", "key.pem")
 	setenv(t, "SHORTENER_SECRET", secret)
+	setenv(t, "SHORTENER_FORCE_GENERATE_ADMIN_USER", "true")
 
 	config, err := config.NewFromEnv()
 
@@ -38,6 +40,7 @@ func TestAllSet(t *testing.T) {
 	require.Equal(t, "cert.pem", config.SSL.CertFile)
 	require.Equal(t, "key.pem", config.SSL.KeyFile)
 	require.Equal(t, secret, config.Secret)
+	require.True(t, config.ForceGenerateAdminUser)
 }
 
 func TestUseSSLSetButNoSSLConfig(t *testing.T) {

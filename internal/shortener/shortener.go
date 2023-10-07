@@ -24,6 +24,7 @@ type Shortener struct {
 	handler *handler
 
 	configService ConfigService
+	config        *config.Config
 }
 
 type handler struct {
@@ -79,6 +80,7 @@ func New(config *config.Config, db Database, idGenerator IDGenerator, userServic
 			idGenerator:   idGenerator,
 			logger:        logger,
 		},
+		config:        config,
 		configService: configService,
 	}
 
@@ -94,11 +96,7 @@ func (s *Shortener) SetLogger(l *slog.Logger) *Shortener {
 }
 
 func (s *Shortener) init() error {
-	shouldCreateInitialUser, err := s.configService.ShouldCreateInitialUser()
-	if err != nil {
-		s.logger.Warn("error while checking whether to create initial user", "error", err)
-	}
-	if shouldCreateInitialUser {
+	if s.shouldCreateInitialUser() {
 		email, password := "admin@asankov.dev", random.Password(30)
 		if err := s.handler.userService.CreateUser(email, password, []users.Role{users.RoleAdmin}); err != nil {
 			return err
@@ -108,6 +106,17 @@ func (s *Shortener) init() error {
 	}
 
 	return nil
+}
+
+func (s *Shortener) shouldCreateInitialUser() bool {
+	if s.config.ForceGenerateAdminUser {
+		return true
+	}
+	shouldCreateInitialUser, err := s.configService.ShouldCreateInitialUser()
+	if err != nil {
+		s.logger.Warn("error while checking whether to create initial user", "error", err)
+	}
+	return shouldCreateInitialUser
 }
 
 func (s *Shortener) Start() error {
