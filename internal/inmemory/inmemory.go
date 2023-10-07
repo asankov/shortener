@@ -17,7 +17,7 @@ func NewDB() *DB {
 	return &DB{
 		links: make(map[string]*links.Link),
 		users: map[string]*users.User{
-			"admin@asankov.dev": &users.User{
+			"admin@asankov.dev": {
 				Email: "admin@asankov.dev",
 				Roles: []users.Role{users.RoleAdmin},
 			},
@@ -42,12 +42,21 @@ func (d *DB) GetAll() ([]*links.Link, error) {
 }
 
 func (d *DB) Create(id string, url string) error {
-	d.links[id] = &links.Link{ID: id, URL: url}
+	d.links[id] = &links.Link{ID: id, URL: url, Metrics: &links.Metrics{Clicks: 0}}
 	return nil
 }
 
 func (d *DB) Delete(id string) error {
 	delete(d.links, id)
+	return nil
+}
+
+func (d *DB) IncrementClicks(id string) error {
+	link, ok := d.links[id]
+	if !ok {
+		return links.ErrLinkNotFound
+	}
+	link.Metrics.Clicks++
 	return nil
 }
 
