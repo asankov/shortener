@@ -39,6 +39,18 @@ type CreateShortLinkResponse struct {
 	Url string `json:"url"`
 }
 
+// GetLinkMetricsResponse defines model for GetLinkMetricsResponse.
+type GetLinkMetricsResponse struct {
+	Id      string      `json:"id"`
+	Metrics LinkMetrics `json:"metrics"`
+	Url     string      `json:"url"`
+}
+
+// LinkMetrics defines model for LinkMetrics.
+type LinkMetrics struct {
+	Clicks int `json:"clicks"`
+}
+
 // LoginAdminJSONRequestBody defines body for LoginAdmin for application/json ContentType.
 type LoginAdminJSONRequestBody = AdminLoginRequest
 
