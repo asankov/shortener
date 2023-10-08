@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shortener-ingress
+  namespace: shortener
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: s.asankov.dev
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: shortener
+                port:
+                  number: 80
+  tls:
+    - hosts:
+      - s.asankov.dev
+      secretName: shortener-api-certs
