@@ -24,6 +24,21 @@ spec:
         env:
         - name: SHORTENER_PORT
           value: "8080"
+        - name: SHORTENER_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: shortener-secret
+              key: secret
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: shortener-aws-credentials
+              key: accessKeyId
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: shortener-aws-credentials
+              key: accessKey
 ---
 apiVersion: v1
 kind: Service
