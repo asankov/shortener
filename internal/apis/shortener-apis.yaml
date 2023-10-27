@@ -67,6 +67,16 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateShortLinkRequest'
+    get:
+      summary: ''
+      operationId: get-all-links
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLinksResponse'
   '/api/v1/links/{linkId}':
     parameters:
       - schema:
@@ -181,6 +191,31 @@ components:
           type: integer
       required:
         - clicks
+    GetLinksResponse:
+      title: GetLinksResponse
+      x-stoplight:
+        id: z9i0z71civm2o
+      type: object
+      properties:
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+    Link:
+      title: Link
+      x-stoplight:
+        id: 4rinfiezwm23e
+      type: object
+      properties:
+        id:
+          type: string
+          x-go-name: ID
+        url:
+          type: string
+          x-go-name: URL
+      required:
+        - id
+        - url
   requestBodies: {}
   securitySchemes:
     JWT:

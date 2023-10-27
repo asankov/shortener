@@ -141,3 +141,26 @@ func (h *handler) DeleteShortLink(w http.ResponseWriter, r *http.Request, linkID
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *handler) GetAllLinks(w http.ResponseWriter, r *http.Request) {
+
+	links, err := h.db.GetAll()
+	if err != nil {
+		h.logger.Error("Error while getting links", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	res := make([]apis.Link, 0, len(links))
+	for _, link := range links {
+		res = append(res, apis.Link{
+			ID:  link.ID,
+			URL: link.URL,
+		})
+	}
+
+	if err := json.NewEncoder(w).Encode(apis.GetLinksResponse{Links: &res}); err != nil {
+		h.logger.Error("error while encoding response", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}

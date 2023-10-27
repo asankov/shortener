@@ -46,6 +46,17 @@ type GetLinkMetricsResponse struct {
 	URL     string      `json:"url"`
 }
 
+// GetLinksResponse defines model for GetLinksResponse.
+type GetLinksResponse struct {
+	Links *[]Link `json:"links,omitempty"`
+}
+
+// Link defines model for Link.
+type Link struct {
+	ID  string `json:"id"`
+	URL string `json:"url"`
+}
+
 // LinkMetrics defines model for LinkMetrics.
 type LinkMetrics struct {
 	Clicks int `json:"clicks"`
@@ -62,6 +73,9 @@ type ServerInterface interface {
 
 	// (POST /api/v1/admin/login)
 	LoginAdmin(w http.ResponseWriter, r *http.Request)
+
+	// (GET /api/v1/links)
+	GetAllLinks(w http.ResponseWriter, r *http.Request)
 
 	// (POST /api/v1/links)
 	CreateNewLink(w http.ResponseWriter, r *http.Request)
@@ -91,6 +105,21 @@ func (siw *ServerInterfaceWrapper) LoginAdmin(w http.ResponseWriter, r *http.Req
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.LoginAdmin(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetAllLinks operation middleware
+func (siw *ServerInterfaceWrapper) GetAllLinks(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAllLinks(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -313,6 +342,8 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 	}
 
 	r.HandleFunc(options.BaseURL+"/api/v1/admin/login", wrapper.LoginAdmin).Methods("POST")
+
+	r.HandleFunc(options.BaseURL+"/api/v1/links", wrapper.GetAllLinks).Methods("GET")
 
 	r.HandleFunc(options.BaseURL+"/api/v1/links", wrapper.CreateNewLink).Methods("POST")
 
